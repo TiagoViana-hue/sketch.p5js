@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sketch p5.js Exemplo</title>
+
+    <!-- Importa a biblioteca p5.js (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+
+    <!-- Código JavaScript do sketch p5.js -->
+    <script>
+      let circleX = 100;
+      let circleSpeed = 2;
+      let squareY = 0;
+      let squareSpeed = 3;
+      let diagX = 0;
+      let diagY = 0;
+      let diagSpeed = 1.5;
+      let playerX = 300;
+      let playerY = 300;
+      let playerSize = 40;
+      let mouseCircles = [];
+
+      function setup() {
+        createCanvas(600, 400);
+        noStroke();
+      }
+
+      function draw() {
+        background(240);
+        fill(255, 100, 100);
+        ellipse(circleX, 100, 40);
+        circleX += circleSpeed;
+        if (circleX > width || circleX < 0) {
+          circleSpeed *= -1;
+        }
+        fill(100, 200, 255);
+        rect(200, squareY, 40, 40);
+        squareY += squareSpeed;
+        if (squareY > height || squareY < 0) {
+          squareSpeed *= -1;
+        }
+        fill(180, 255, 180);
+        ellipse(diagX, diagY, 30);
+        diagX += diagSpeed;
+        diagY += diagSpeed;
+        if (diagX > width || diagX < 0) diagSpeed *= -1;
+        if (diagY > height || diagY < 0) diagSpeed *= -1;
+        fill(255, 180, 0);
+        rect(playerX, playerY, playerSize, playerSize);
+        handleKeyboard();
+        fill(0, 150, 255);
+        for (let i = 0; i < mouseCircles.length; i++) {
+          ellipse(mouseCircles[i].x, mouseCircles[i].y, 20);
+        }
+        fill(150);
+        for (let i = 0; i < width; i += 60) {
+          rect(i, height - 40, 30, 30);
+        }
+      }
+
+      function handleKeyboard() {
+        if (keyIsDown(LEFT_ARROW)) {
+          playerX -= 4;
+        }
+        if (keyIsDown(RIGHT_ARROW)) {
+          playerX += 4;
+        }
+        if (keyIsDown(UP_ARROW)) {
+          playerY -= 4;
+        }
+        if (keyIsDown(DOWN_ARROW)) {
+          playerY += 4;
+        }
+      }
+
+      function mousePressed() {
+        mouseCircles.push({ x: mouseX, y: mouseY });
+      }
+    </script>
+  </head>
+  <body></body>
+</html>
