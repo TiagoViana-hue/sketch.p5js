@@ -2,80 +2,94 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <title>Sketch p5.js Exemplo</title>
-
-    <!-- Importa a biblioteca p5.js (CDN) -->
+    <title>exemplo p5.js</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
 
-    <!-- Código JavaScript do sketch p5.js -->
     <script>
-      let circleX = 100;
-      let circleSpeed = 2;
-      let squareY = 0;
-      let squareSpeed = 3;
-      let diagX = 0;
-      let diagY = 0;
-      let diagSpeed = 1.5;
-      let playerX = 300;
-      let playerY = 300;
-      let playerSize = 40;
-      let mouseCircles = [];
+      let posicoes = [];
+      let velocidades = [];
+      let raios = [];
+      let cores = [];
+      let gravidade;
 
       function setup() {
         createCanvas(600, 400);
-        noStroke();
+        colorMode(HSB);
+        gravidade = createVector(0, 0.1);
+
+        for (let i = 0; i < 10; i++) {
+          adicionarBolinha(random(width), random(height));
+        }
       }
 
       function draw() {
-        background(240);
-        fill(255, 100, 100);
-        ellipse(circleX, 100, 40);
-        circleX += circleSpeed;
-        if (circleX > width || circleX < 0) {
-          circleSpeed *= -1;
-        }
-        fill(100, 200, 255);
-        rect(200, squareY, 40, 40);
-        squareY += squareSpeed;
-        if (squareY > height || squareY < 0) {
-          squareSpeed *= -1;
-        }
-        fill(180, 255, 180);
-        ellipse(diagX, diagY, 30);
-        diagX += diagSpeed;
-        diagY += diagSpeed;
-        if (diagX > width || diagX < 0) diagSpeed *= -1;
-        if (diagY > height || diagY < 0) diagSpeed *= -1;
-        fill(255, 180, 0);
-        rect(playerX, playerY, playerSize, playerSize);
-        handleKeyboard();
-        fill(0, 150, 255);
-        for (let i = 0; i < mouseCircles.length; i++) {
-          ellipse(mouseCircles[i].x, mouseCircles[i].y, 20);
-        }
-        fill(150);
-        for (let i = 0; i < width; i += 60) {
-          rect(i, height - 40, 30, 30);
-        }
-      }
+        background(0);
 
-      function handleKeyboard() {
-        if (keyIsDown(LEFT_ARROW)) {
-          playerX -= 4;
+        // Atualiza posições
+        for (let i = 0; i < posicoes.length; i++) {
+          velocidades[i].add(gravidade);
+          posicoes[i].add(velocidades[i]);
+
+          // Colisão com as bordas
+          let r = raios[i];
+          if (posicoes[i].x - r < 0 || posicoes[i].x + r > width) {
+            velocidades[i].x *= -1;
+          }
+          if (posicoes[i].y - r < 0 || posicoes[i].y + r > height) {
+            velocidades[i].y *= -1;
+            velocidades[i].y *= 0.9; // Perda de energia
+          }
+
+          // Mantém dentro da tela
+          posicoes[i].x = constrain(posicoes[i].x, r, width - r);
+          posicoes[i].y = constrain(posicoes[i].y, r, height - r);
         }
-        if (keyIsDown(RIGHT_ARROW)) {
-          playerX += 4;
+
+        // Colisão simples entre bolinhas
+        for (let i = 0; i < posicoes.length; i++) {
+          for (let j = i + 1; j < posicoes.length; j++) {
+            let pi = posicoes[i];
+            let pj = posicoes[j];
+            let d = dist(pi.x, pi.y, pj.x, pj.y);
+            let minDist = raios[i] + raios[j];
+
+            if (d < minDist) {
+              // Inverter velocidades como resposta simples à colisão
+              velocidades[i].mult(-1);
+              velocidades[j].mult(-1);
+
+              // Afasta as bolinhas para não ficarem sobrepostas
+              let angle = atan2(pj.y - pi.y, pj.x - pi.x);
+              let overlap = minDist - d;
+              let moveX = cos(angle) * overlap / 2;
+              let moveY = sin(angle) * overlap / 2;
+
+              pi.x -= moveX;
+              pi.y -= moveY;
+              pj.x += moveX;
+              pj.y += moveY;
+            }
+          }
         }
-        if (keyIsDown(UP_ARROW)) {
-          playerY -= 4;
-        }
-        if (keyIsDown(DOWN_ARROW)) {
-          playerY += 4;
+
+        // Desenho das bolinhas
+        for (let i = 0; i < posicoes.length; i++) {
+          fill(cores[i]);
+          noStroke();
+          ellipse(posicoes[i].x, posicoes[i].y, raios[i] * 2);
         }
       }
 
       function mousePressed() {
-        mouseCircles.push({ x: mouseX, y: mouseY });
+        adicionarBolinha(mouseX, mouseY);
+      }
+
+      function adicionarBolinha(x, y) {
+        posicoes.push(createVector(x, y));
+        velocidades.push(createVector(random(-2, 2), random(-2, 2)));
+        raios.push(random(10, 30));
+        cores.push(color(random(360), 100, 100));
       }
     </script>
   </head>
